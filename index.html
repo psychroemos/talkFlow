@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TalkFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+    <!-- ===== BACKSTAGE ===== -->
+    <div id="backstage" class="backstage">
+        <header class="app-header">
+            <button class="header-icon" id="settingsBtn">&#9881;</button>
+            <span class="header-title">TalkFlow</span>
+            <div style="width:32px"></div>
+        </header>
+
+        <main class="tab-content">
+
+            <!-- TAB 1: TALKS -->
+            <section id="talksTab" class="tab-page active">
+                <div class="talks-top">
+                    <h1 class="page-title">My Talks</h1>
+                    <button class="btn-primary" id="newTalkBtn">+ New Talk</button>
+                </div>
+                <div class="filter-row">
+                    <button class="filter-btn active" data-catfilter="all">All</button>
+                    <button class="filter-btn" data-catfilter="midweek">Midweek</button>
+                    <button class="filter-btn" data-catfilter="public">Public Talk</button>
+                </div>
+                <div id="talksList" class="talks-list"></div>
+            </section>
+
+            <!-- TAB 2: PREPARE -->
+            <section id="prepareTab" class="tab-page">
+                <div class="prepare-header">
+                    <button class="back-btn" id="prepareBackBtn">&#9664; Back</button>
+                    <input type="text" id="talkTitle" class="title-input" placeholder="Talk title...">
+                    <div class="prepare-meta">
+                        <select id="talkCategory" class="meta-select">
+                            <option value="midweek">Midweek</option>
+                            <option value="public">Public Talk</option>
+                        </select>
+                        <div class="meta-time">
+                            <input type="number" id="talkTargetTime" class="time-input" placeholder="30" min="1" max="120">
+                            <span>min target</span>
+                        </div>
+                        <span class="time-summary" id="timeSummary"></span>
+                    </div>
+                </div>
+                <div class="section-label">Topics</div>
+                <div id="topicList" class="topic-list"></div>
+                <button class="btn-add-topic" id="addTopicBtn">+ Add Topic</button>
+                <div class="prepare-actions">
+                    <button class="btn-start" id="startPresentBtn">Start Talk</button>
+                </div>
+            </section>
+
+        </main>
+
+        <nav class="tab-bar">
+            <button class="tab-btn active" data-tab="talks">Talks</button>
+            <button class="tab-btn" data-tab="prepare">Prepare</button>
+            <button class="tab-btn" data-tab="present">Present</button>
+        </nav>
+    </div>
+
+    <!-- ===== STAGE (Present Mode) ===== -->
+    <div id="stage" class="stage">
+        <div class="stage-inner">
+            <div class="stage-top">
+                <div class="stage-timer">
+                    <span class="timer-current" id="timerCurrent">00:00</span>
+                    <span class="timer-sep">/</span>
+                    <span class="timer-target" id="timerTarget">30:00</span>
+                </div>
+                <div class="stage-progress">
+                    <div class="stage-progress-fill" id="progressFill"></div>
+                </div>
+                <button class="btn-end" id="endTalkBtn">End</button>
+            </div>
+
+            <div class="stage-body">
+                <div class="stage-sidebar" id="presentSidebar">
+                    <div id="presentTopicList" class="stage-sidebar-list"></div>
+                </div>
+                <div class="stage-main" id="stageMain">
+                    <div class="stage-main-scroll">
+                        <div class="stage-step" id="presentStep">1 of 6</div>
+                        <div class="stage-card-title" id="presentTitle">Topic Title</div>
+                        <div class="stage-card-points" id="presentPoints"></div>
+                        <div class="stage-topic-time" id="presentTopicTime"></div>
+                        <button class="btn-done" id="doneTopicBtn">Tapos na &#10003;</button>
+                        <div class="stage-next" id="presentNext"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stage-arrows">
+                <button class="stage-arrow" id="prevTopicBtn">&#9664;</button>
+                <button class="stage-arrow" id="nextTopicBtn">&#9654;</button>
+            </div>
+        </div>
+    </div>
+        <!-- ===== NEW TALK PANEL ===== -->
+    <div id="newTalkPanel" class="slide-panel">
+        <div class="panel-header">
+            <span>New Talk</span>
+            <button class="panel-close" id="newTalkClose">&#10005;</button>
+        </div>
+        <div class="panel-body">
+            <label>Talk Title</label>
+            <input type="text" id="newTalkTitle" class="form-input" placeholder="e.g. Ang Pag-ibig ng Diyos">
+            <label>Category</label>
+            <select id="newTalkCategory" class="form-input">
+                <option value="midweek">Midweek</option>
+                <option value="public">Public Talk</option>
+            </select>
+            <label>Target Time (minutes)</label>
+            <input type="number" id="newTalkTime" class="form-input" placeholder="e.g. 30" min="1" max="120">
+            <button class="btn-save" id="createTalkBtn">Create Talk</button>
+        </div>
+    </div>
+    <div id="newTalkOverlay" class="overlay"></div>
+
+    <!-- ===== TOPIC PANEL ===== -->
+    <div id="topicPanel" class="slide-panel">
+        <div class="panel-header">
+            <span id="topicPanelTitle">Add Topic</span>
+            <button class="panel-close" id="topicPanelClose">&#10005;</button>
+        </div>
+        <div class="panel-body">
+            <label>Section Title</label>
+            <input type="text" id="topicTitle" class="form-input" placeholder="e.g. Pambungad">
+
+            <label>Keywords / Sub-points</label>
+            <div class="rich-toolbar">
+                <button type="button" class="rich-btn rich-btn-bold" id="richBold">B</button>
+                <button type="button" class="rich-btn rich-btn-underline" id="richUnderline">U</button>
+                <button type="button" class="rich-btn rich-btn-highlight" id="richHighlight">H</button>
+            </div>
+            <textarea id="topicPoints" class="form-input topic-textarea" rows="8" placeholder="Hit Enter for auto-dash&#10;Select text then tap B, U, or H to format"></textarea>
+
+            <label>Suggested Time (minutes)</label>
+            <input type="number" id="topicTime" class="form-input" placeholder="e.g. 5" min="1" max="60">
+
+            <button class="btn-save" id="saveTopicBtn">Save</button>
+            <button class="btn-delete hidden" id="deleteTopicBtn">Delete this topic</button>
+        </div>
+    </div>
+    <div id="topicPanelOverlay" class="overlay"></div>
+
+    <!-- ===== REVIEW PANEL ===== -->
+    <div id="reviewPanel" class="slide-panel slide-panel-full">
+        <div class="panel-header">
+            <span>Talk Review</span>
+            <button class="panel-close" id="reviewCloseBtn">&#10005;</button>
+        </div>
+        <div class="panel-body">
+            <div class="review-summary" id="reviewSummary"></div>
+            <div class="section-label" style="margin-top:20px">Time per Topic</div>
+            <div id="reviewTopics" class="review-topics"></div>
+            <div class="section-label" style="margin-top:20px">Notes for Improvement</div>
+            <textarea id="reviewNotes" class="form-input" rows="4" placeholder="What went well? What to improve next time?"></textarea>
+            <button class="btn-save" id="saveReviewBtn">Save Review</button>
+        </div>
+    </div>
+    <div id="reviewOverlay" class="overlay"></div>
+
+    <!-- ===== SETTINGS MODAL ===== -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Settings</span>
+                <button class="panel-close" id="settingsCloseBtn">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <label>Present Mode Font Size</label>
+                <select id="fontSizeSelect" class="form-input">
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                    <option value="xlarge">Extra Large</option>
+                </select>
+                <div class="section-divider"></div>
+                <label>Data</label>
+                <div class="export-row">
+                    <button class="btn-export" id="exportJsonBtn">Backup Data (JSON)</button>
+                    <button class="btn-export" id="importJsonBtn">Restore Data (JSON)</button>
+                </div>
+                <input type="file" id="importFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONFIRMATION DIALOG ===== -->
+    <div id="confirmDialog" class="modal hidden">
+        <div class="modal-content modal-small">
+            <p id="confirmMessage">Are you sure?</p>
+            <div class="confirm-actions">
+                <button class="btn-cancel" id="confirmNoBtn">Cancel</button>
+                <button class="btn-danger" id="confirmYesBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js');
+        }
+    </script>
+</body>
+</html>
