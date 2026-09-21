@@ -171,7 +171,7 @@ button { font-family: inherit; }
     font-weight: 700;
     cursor: pointer;
 }
-.btn-primary:active { background: #1d4ed8; }
+.btn-primary:active { background: #374151; }
 .talks-list { display: flex; flex-direction: column; gap: 12px; }
 .talk-card {
     background: white;
@@ -348,6 +348,26 @@ button { font-family: inherit; }
     flex-shrink: 0;
 }
 .btn-end:active { background: rgba(255,255,255,0.05); color: white; }
+.stage-clock {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+.btn-pause {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: rgba(255,255,255,0.35);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.btn-pause:active { background: rgba(255,255,255,0.05); color: white; }
+.btn-pause.paused { color: #fbbf24; border-color: rgba(251,191,36,0.4); }
 
 /* ===== STAGE — BODY ===== */
 .stage-body { flex: 1; display: flex; overflow: hidden; }
@@ -418,7 +438,7 @@ button { font-family: inherit; }
     margin-bottom: 24px;
     line-height: 1.2;
     max-width: none;
-    text-align: center;
+    text-align: left;
     flex-shrink: 0;
 }
 .stage-card-title.font-medium { font-size: 2rem; }
@@ -444,7 +464,7 @@ button { font-family: inherit; }
     transition: border-color 0.2s;
 }
 .stage-point:nth-child(odd) { border-left-color: rgba(255,255,255,0.12); }
-.stage-point:nth-child(even) { border-left-color: rgba(37,99,235,0.3); }
+.stage-point:nth-child(even) { border-left-color: rgba(255,255,255,0.22); }
 .stage-point.font-medium { font-size: 1.1rem; }
 .stage-point.font-large { font-size: 1.4rem; }
 .stage-point.font-xlarge { font-size: 1.7rem; }
@@ -646,7 +666,6 @@ textarea.form-input { resize: vertical; }
     cursor: pointer;
     margin-top: 24px;
 }
-.btn-save:active { background: #1d4ed8; }
 .btn-delete {
     width: 100%;
     padding: 14px;

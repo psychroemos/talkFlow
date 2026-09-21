@@ -15,6 +15,8 @@ var editingTopicId = null;
 var currentTopicIndex = 0;
 var timerInterval = null;
 var timerSeconds = 0;
+var timerStartEpoch = 0;
+var timerRunning = false;
 var topicStartTime = 0;
 var topicTimes = [];
 var confirmCallback = null;
@@ -33,6 +35,12 @@ function loadData() {
 
 // ===== HELPERS =====
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function formatTime(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
 function formatMinutes(m) { return (m || 0) + ' min'; }
 function getCurrentTalk() { return currentTalkId ? appData.talks.find(function(t){return t.id===currentTalkId}) : null; }
@@ -148,7 +156,7 @@ function renderTalks() {
         var lu = talk.lastUsed?'Last: '+talk.lastUsed:'Never used';
         return '<div class="talk-card">' +
             '<div class="talk-card-top" onclick="openTalk(\''+talk.id+'\')">' +
-                '<span class="talk-card-title">'+talk.title+'</span>' +
+                '<span class="talk-card-title">'+escapeHtml(talk.title)+'</span>' +
                 '<span class="talk-card-badge '+bc+'">'+bl+'</span></div>' +
             '<div class="talk-card-meta" onclick="openTalk(\''+talk.id+'\')">' +
                 '<span>'+tc+' topics</span><span>'+formatMinutes(tt)+'</span><span>'+lu+'</span></div>' +
@@ -283,8 +291,8 @@ function renderTopicList() {
         return '<div class="topic-card" onclick="openTopicPanel(\''+topic.id+'\')">' +
             '<span class="topic-number">'+(idx+1)+'</span>' +
             '<div class="topic-card-info">' +
-                '<span class="topic-card-title">'+topic.title+'</span>' +
-                (preview ? '<span class="topic-card-preview">'+preview+'</span>' : '') +
+                '<span class="topic-card-title">'+escapeHtml(topic.title)+'</span>' +
+                (preview ? '<span class="topic-card-preview">'+escapeHtml(preview)+'</span>' : '') +
             '</div>' +
             '<span class="topic-card-time">'+formatMinutes(topic.time)+'</span></div>';
     }).join('');
@@ -393,6 +401,7 @@ function startPresent() {
     enterStage();
     requestWakeLock();
     startTimer();
+    updatePauseButton();
     renderPresent();
 
     // Scroll to top
@@ -403,11 +412,44 @@ function startPresent() {
 // ===== TIMER =====
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(function(){ timerSeconds++; updateTimerDisplay(); }, 1000);
+    timerStartEpoch = Date.now() - (timerSeconds * 1000);
+    timerRunning = true;
+    updateClock();
+    timerInterval = setInterval(function(){
+        if (timerRunning) timerSeconds = Math.floor((Date.now() - timerStartEpoch) / 1000);
+        updateTimerDisplay();
+        updateClock();
+    }, 250);
 }
 function stopTimer() {
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    timerRunning = false;
     releaseWakeLock();
+}
+
+function togglePause() {
+    if (timerRunning) {
+        timerRunning = false;
+    } else {
+        timerStartEpoch = Date.now() - (timerSeconds * 1000);
+        timerRunning = true;
+    }
+    updatePauseButton();
+}
+function updatePauseButton() {
+    var btn = document.getElementById('pauseBtn');
+    if (!btn) return;
+    btn.textContent = timerRunning ? 'Pause' : 'Resume';
+    btn.classList.toggle('paused', !timerRunning);
+}
+function updateClock() {
+    var el = document.getElementById('stageClock');
+    if (!el) return;
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12; if (h === 0) h = 12;
+    el.textContent = h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
 }
 
 function updateTimerDisplay() {
@@ -524,7 +566,7 @@ function renderStageSidebar() {
         }
         return '<div class="'+cls+'" onclick="jumpToTopic('+idx+')">' +
             '<span class="sidebar-check">'+check+'</span>' +
-            '<span>'+topic.title+'</span></div>';
+            '<span>'+escapeHtml(topic.title)+'</span></div>';
     }).join('');
 }
 
@@ -616,7 +658,7 @@ function showReview() {
         var ac = 'on-time';
         if (suggested > 0 && actual > suggested * 1.1) ac = 'over';
         return '<div class="review-topic-row">' +
-            '<span class="review-topic-name">'+(idx+1)+'. '+topic.title+'</span>' +
+            '<span class="review-topic-name">'+(idx+1)+'. '+escapeHtml(topic.title)+'</span>' +
             '<div class="review-topic-times">' +
                 '<span class="review-actual '+ac+'">'+formatTime(actual)+'</span>' +
                 '<span class="review-suggested">/ '+formatTime(suggested)+'</span></div></div>';
@@ -785,6 +827,13 @@ function initApp() {
     document.getElementById('endTalkBtn').addEventListener('click', confirmEndTalk);
     document.getElementById('prevTopicBtn').addEventListener('click', goToPrevTopic);
     document.getElementById('nextTopicBtn').addEventListener('click', goToNextTopic);
+    document.getElementById('pauseBtn').addEventListener('click', togglePause);
+    document.addEventListener('visibilitychange', function(){
+        if (document.visibilityState === 'visible' &&
+            document.getElementById('stage').classList.contains('active')) {
+            requestWakeLock();
+        }
+    });
 
     // Review
     document.getElementById('reviewCloseBtn').addEventListener('click', closeReview);
